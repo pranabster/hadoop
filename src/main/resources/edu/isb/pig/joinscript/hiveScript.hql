@@ -1,3 +1,6 @@
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Start hive and set the environment variables
+---------------------------------------------------------------------------------------------------------------------------------------------
 
 -- open console and navigate to path - cd /home/ubuntu/work/apache-hive-1.0.0/bin
 -- Start hive script  - ./hive
@@ -5,6 +8,13 @@
 
 --enables the cli to show the current database
 set hive.cli.print.current.db=true;
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Create Schema
+---------------------------------------------------------------------------------------------------------------------------------------------
 
 --create the database
 CREATE DATABASE IF NOT EXISTS taxmanagement LOCATION '/user/ubuntu/hive/warehouse';
@@ -18,6 +28,12 @@ USE taxmanagement;
 
 --Find the available tables in the database. This list should be blank as the database is created newly.
 SHOW TABLES;
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Create table 
+---------------------------------------------------------------------------------------------------------------------------------------------
 
 --create the tax table
 CREATE TABLE IF NOT EXISTS taxmanagement.tax (
@@ -54,6 +70,13 @@ SHOW TABLES;
 DESCRIBE FORMATTED  taxmanagement.address;
 
 
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Load table data
+---------------------------------------------------------------------------------------------------------------------------------------------
+
 --load data into the tables
 LOAD DATA LOCAL INPATH '/home/ubuntu/Downloads/data/201*.csv' OVERWRITE INTO TABLE tax;
 LOAD DATA LOCAL INPATH '/home/ubuntu/Downloads/data/Address.csv' OVERWRITE INTO TABLE address;
@@ -62,9 +85,25 @@ LOAD DATA LOCAL INPATH '/home/ubuntu/Downloads/data/Address.csv' OVERWRITE INTO 
 select * from tax limit 10;
 select * from address limit 10;
 
---Join the data
-SELECT a.folio, sum(b.taxPaid) as totalTaxPaid FROM address a JOIN tax b ON a.folio = b.folio GROUP BY a.folio;
 
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+-- Functionality and query 
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+--filter
+select * from tax where pid is null;
+select * from tax where taxAssessmentYear=2015 and taxPaid > 350000;
+
+--order by
+select folio, taxPaid from tax where taxAssessmentYear=2015 and taxPaid > 3500000 order by taxPaid desc;
+
+--Group by 
+SELECT a.folio, sum(a.taxPaid) as totalTaxPaid FROM tax a GROUP BY a.folio;
+
+--Join the data
 SELECT a.folio, a.streetName, a.postalCode, e.totalTaxPaid from address a join (SELECT b.folio, sum(b.taxPaid) as totalTaxPaid FROM tax b GROUP BY b.folio) e on a.folio = e.folio;
 
 
